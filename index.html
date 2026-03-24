@@ -112,7 +112,7 @@
     <!-- Script de conexión a Google Sheets -->
     <script>
         // PEGAR AQUÍ LA URL DEL SCRIPT DE GOOGLE QUE CREAREMOS:
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweb0a6EKmlw_3e-IN8hWiWpLvBrsXw4AF7pOTbXhzdiyWmBEm64TGxs9TlgsPchXMW/exec'; 
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyc6N4YxjSVqkQWytwUaUO8BzEoe0E0zd90Eyvg3jgPIptKlo2z3Fk5iOfh52OWDZNK/exec'; 
 
         const form = document.getElementById('attendanceForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -137,21 +137,29 @@
             errorMessage.classList.add('hidden');
 
             try {
+                // Preparamos los datos en formato x-www-form-urlencoded (más fiable para Google)
                 const formData = new FormData(form);
+                const params = new URLSearchParams();
+                for (const pair of formData) {
+                    params.append(pair[0], pair[1]);
+                }
+
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: formData,
+                    body: params,
                     mode: 'no-cors'
                 });
 
-                // Con 'no-cors', la respuesta es "opaca" (no podemos leer response.ok),
-                // pero si la petición no falló por red (catch), asumimos que llegó a Google.
+                // Con 'no-cors', asumimos éxito si no hay error de red.
+                // Limpia el formulario y muestra mensaje de éxito.
                 form.reset();
                 successMessage.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
                 
             } catch (error) {
                 console.error('Error!', error.message);
                 errorMessage.classList.remove('hidden');
+                successMessage.classList.add('hidden');
             } finally {
                 // Restaurar botón
                 submitBtn.disabled = false;
